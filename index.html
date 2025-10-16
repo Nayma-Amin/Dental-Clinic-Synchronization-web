@@ -6,147 +6,139 @@
   <title>Dental Clinic Simulation</title>
   <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
 </head>
-<body class="bg-gray-100 font-sans">
+<body class="bg-gradient-to-br from-blue-200 via-purple-200 to-pink-200 font-sans min-h-screen flex items-center justify-center">
 
-  <div class="max-w-3xl mx-auto p-6">
-    <h1 class="text-3xl font-bold text-center text-blue-700 mb-6">🦷 Dental Clinic Simulation</h1>
+  <div class="max-w-3xl w-full p-6 bg-white/90 rounded-2xl shadow-2xl backdrop-blur-md">
+    <h1 class="text-4xl font-extrabold text-center text-indigo-800 mb-8 drop-shadow-lg">🦷 Dental Clinic Simulation</h1>
 
-    <!-- Input Form -->
-    <div class="bg-white p-6 rounded-lg shadow-md mb-6 flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+    <div class="bg-white/80 p-6 rounded-xl shadow-lg mb-6 flex flex-col sm:flex-row gap-4 items-start sm:items-center border border-indigo-300">
       <div class="flex flex-col gap-2 flex-1">
-        <label class="text-gray-700 font-semibold">Number of Patients:</label>
-        <input id="patientsInput" type="number" min="1" value="5" class="w-full p-2 border rounded">
+        <label class="text-indigo-700 font-semibold">Number of Patients:</label>
+        <input id="patientsInput" type="number" min="1" value="5" class="w-full p-2 border rounded-lg border-indigo-300 focus:ring-2 focus:ring-indigo-500">
       </div>
       <div class="flex flex-col gap-2 flex-1">
-        <label class="text-gray-700 font-semibold">Number of Empty Chairs:</label>
-        <input id="chairsInput" type="number" min="1" value="3" class="w-full p-2 border rounded">
+        <label class="text-indigo-700 font-semibold">Number of Empty Chairs:</label>
+        <input id="chairsInput" type="number" min="1" value="3" class="w-full p-2 border rounded-lg border-indigo-300 focus:ring-2 focus:ring-indigo-500">
       </div>
       <div class="flex gap-2 mt-2 sm:mt-0">
-        <button id="startBtn" class="bg-teal-900 text-white px-4 py-2 rounded hover:bg-teal-400">Start Simulation</button>
-        <button id="historyBtn" class="bg-purple-900 text-white px-4 py-2 rounded hover:bg-purple-400">Show History</button>
-        <button id="clearBtn" class="bg-red-900 text-white px-4 py-2 rounded hover:bg-red-400">Clear History</button>
+        <button id="startBtn" class="bg-teal-900 text-white px-4 py-2 rounded-lg shadow-md hover:bg-teal-600 transform hover:-translate-y-1 transition">Start Simulation</button>
+        <button id="historyBtn" class="bg-purple-900 text-white px-4 py-2 rounded-lg shadow-md hover:bg-purple-600 transform hover:-translate-y-1 transition">Show History</button>
+        <button id="clearBtn" class="bg-red-900 text-white px-4 py-2 rounded-lg shadow-md hover:bg-red-600 transform hover:-translate-y-1 transition">Clear History</button>
       </div>
     </div>
 
-    <!-- Output Area -->
-    <div id="logArea" class="bg-white p-6 rounded-lg shadow-md h-96 overflow-y-auto">
-      <p class="text-gray-500">Simulation log will appear here...</p>
+    <div id="logArea" class="bg-white/80 p-6 rounded-xl shadow-lg h-96 overflow-y-auto border border-indigo-300">
+      <p class="text-gray-500 italic">Simulation log will appear here...</p>
     </div>
   </div>
 
 <script>
-    const startBtn = document.getElementById("startBtn");
-    const historyBtn = document.getElementById("historyBtn");
-    const clearBtn = document.getElementById("clearBtn");
-    const logArea = document.getElementById("logArea");
+const startBtn = document.getElementById("startBtn");
+const historyBtn = document.getElementById("historyBtn");
+const clearBtn = document.getElementById("clearBtn");
+const logArea = document.getElementById("logArea");
 
-    // Load history from localStorage
-    let simulationHistory = [];
-    if (localStorage.getItem('dentalClinicHistory')) {
-      simulationHistory = JSON.parse(localStorage.getItem('dentalClinicHistory'));
-    }
+let simulationHistory = [];
+if (localStorage.getItem('dentalClinicHistory')) {
+  simulationHistory = JSON.parse(localStorage.getItem('dentalClinicHistory'));
+}
 
-    startBtn.addEventListener("click", () => {
-      logArea.innerHTML = ""; // clear current log
+startBtn.addEventListener("click", () => {
+  logArea.innerHTML = "";
 
-      const totalPatients = parseInt(document.getElementById("patientsInput").value);
-      const totalChairs = parseInt(document.getElementById("chairsInput").value);
+  const totalPatients = parseInt(document.getElementById("patientsInput").value);
+  const totalChairs = parseInt(document.getElementById("chairsInput").value);
 
-      let waitingChairs = 0;
-      let patientQueue = [];
-      let dentistBusy = false;
+  let waitingChairs = 0;
+  let patientQueue = [];
+  let dentistBusy = false;
+  let currentSimulationLog = [];
 
-      // Temporary log for this simulation
-      let currentSimulationLog = [];
+  function log(message, type = "default") {
+    const p = document.createElement("p");
+    p.textContent = message;
+    p.className = "mb-1 font-medium";
 
-      function log(message, type = "default") {
-        const p = document.createElement("p");
-        p.textContent = message;
-        p.className = "mb-1";
+    if (type === "waiting") p.classList.add("text-yellow-600","bg-yellow-100","p-1","rounded");
+    if (type === "leaving") p.classList.add("text-red-600","bg-red-100","p-1","rounded");
+    if (type === "treated") p.classList.add("text-green-700","bg-green-100","p-1","rounded");
+    if (type === "info") p.classList.add("text-blue-700","bg-blue-100","p-1","rounded");
 
-        // Color coding
-        if (type === "waiting") p.classList.add("text-yellow-600");
-        if (type === "leaving") p.classList.add("text-red-600");
-        if (type === "treated") p.classList.add("text-green-600");
-        if (type === "info") p.classList.add("text-blue-700");
+    logArea.appendChild(p);
+    logArea.scrollTop = logArea.scrollHeight;
 
-        logArea.appendChild(p);
-        logArea.scrollTop = logArea.scrollHeight;
+    currentSimulationLog.push({ message, type });
+  }
 
-        // Save to current simulation log
-        currentSimulationLog.push({ message, type });
+  function treatPatient(patient) {
+    dentistBusy = true;
+    log(`🪥 Dentist starts treating Patient ${patient}...`, "treated");
+    setTimeout(() => {
+      log(`✅ Patient ${patient} has been treated and leaves the clinic.`, "treated");
+      dentistBusy = false;
+
+      if (patientQueue.length > 0) {
+        const nextPatient = patientQueue.shift();
+        treatPatient(nextPatient);
+      } else {
+        waitingChairs = 0;
       }
+    }, 1500);
+  }
 
-      function treatPatient(patient) {
-        dentistBusy = true;
-        log(`🪥 Dentist starts treating Patient ${patient}...`, "treated");
-        setTimeout(() => {
-          log(`✅ Patient ${patient} has been treated and leaves the clinic.`, "treated");
-          dentistBusy = false;
-
-          if (patientQueue.length > 0) {
-            const nextPatient = patientQueue.shift();
-            treatPatient(nextPatient);
-          } else {
-            waitingChairs = 0; // reset chairs when done
-          }
-        }, 1500);
+  for (let i = 1; i <= totalPatients; i++) {
+    setTimeout(() => {
+      if (waitingChairs < totalChairs) {
+        if (dentistBusy) {
+          waitingChairs++;
+          patientQueue.push(i);
+          log(`🪑 Patient ${i} is waiting. Empty chairs left: ${totalChairs - waitingChairs}`, "waiting");
+        } else {
+          treatPatient(i);
+        }
+      } else {
+        log(`🚪 No empty chair! Patient ${i} leaves the clinic.`, "leaving");
       }
+    }, i * 1000);
+  }
 
-      for (let i = 1; i <= totalPatients; i++) {
-        setTimeout(() => {
-          if (waitingChairs < totalChairs) {
-            if (dentistBusy) {
-              waitingChairs++;
-              patientQueue.push(i);
-              log(`🪑 Patient ${i} is waiting. Empty chairs left: ${totalChairs - waitingChairs}`, "waiting");
-            } else {
-              treatPatient(i);
-            }
-          } else {
-            log(`🚪 No empty chair! Patient ${i} leaves the clinic.`, "leaving");
-          }
-        }, i * 1000);
-      }
+  setTimeout(() => {
+    simulationHistory.push(currentSimulationLog);
+    localStorage.setItem('dentalClinicHistory', JSON.stringify(simulationHistory));
+  }, (totalPatients + 2) * 1000);
+});
 
-      // Save this simulation to history and localStorage
-      setTimeout(() => {
-        simulationHistory.push(currentSimulationLog);
-        localStorage.setItem('dentalClinicHistory', JSON.stringify(simulationHistory));
-      }, (totalPatients + 2) * 1000);
+historyBtn.addEventListener("click", () => {
+  logArea.innerHTML = "";
+  if (simulationHistory.length === 0) {
+    logArea.innerHTML = "<p class='text-gray-500 italic'>No simulation history yet.</p>";
+    return;
+  }
+
+  simulationHistory.forEach((sim, index) => {
+    const title = document.createElement("p");
+    title.textContent = `Simulation #${index + 1}`;
+    title.className = "font-bold text-indigo-700 mt-2 mb-1";
+    logArea.appendChild(title);
+
+    sim.forEach(item => {
+      const p = document.createElement("p");
+      p.textContent = item.message;
+      p.className = "mb-1 font-medium";
+      if (item.type === "waiting") p.classList.add("text-yellow-600","bg-yellow-100","p-1","rounded");
+      if (item.type === "leaving") p.classList.add("text-red-600","bg-red-100","p-1","rounded");
+      if (item.type === "treated") p.classList.add("text-green-700","bg-green-100","p-1","rounded");
+      if (item.type === "info") p.classList.add("text-blue-700","bg-blue-100","p-1","rounded");
+      logArea.appendChild(p);
     });
+  });
+});
 
-    historyBtn.addEventListener("click", () => {
-      logArea.innerHTML = ""; // clear current log
-      if (simulationHistory.length === 0) {
-        logArea.innerHTML = "<p class='text-gray-500'>No simulation history yet.</p>";
-        return;
-      }
-
-      simulationHistory.forEach((sim, index) => {
-        const title = document.createElement("p");
-        title.textContent = `Simulation #${index + 1}`;
-        title.className = "font-bold text-blue-700 mt-2 mb-1";
-        logArea.appendChild(title);
-
-        sim.forEach(item => {
-          const p = document.createElement("p");
-          p.textContent = item.message;
-          p.className = "mb-1";
-          if (item.type === "waiting") p.classList.add("text-yellow-600");
-          if (item.type === "leaving") p.classList.add("text-red-600");
-          if (item.type === "treated") p.classList.add("text-green-600");
-          if (item.type === "info") p.classList.add("text-blue-700");
-          logArea.appendChild(p);
-        });
-      });
-    });
-
-    clearBtn.addEventListener("click", () => {
-      simulationHistory = [];
-      localStorage.removeItem('dentalClinicHistory');
-      logArea.innerHTML = "<p class='text-gray-500'>Simulation history cleared.</p>";
-    });
-  </script>
+clearBtn.addEventListener("click", () => {
+  simulationHistory = [];
+  localStorage.removeItem('dentalClinicHistory');
+  logArea.innerHTML = "<p class='text-gray-500 italic'>Simulation history cleared.</p>";
+});
+</script>
 </body>
 </html>
